@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="Jerin Thadathil Varghese: UX engineer, interaction designer and motion designer based in Limerick, Ireland.">
+<link rel="canonical" href="https://jerintvarghese.com/">
+<meta property="og:url" content="https://jerintvarghese.com/">
+<meta property="og:type" content="website">
 <meta property="og:title" content="Jerin Thadathil Varghese: UX & Interaction Designer">
 <meta property="og:description" content="UX research, interaction design, motion graphics and front-end development.">
 <title>Jerin Thadathil Varghese</title>
@@ -314,6 +317,40 @@ footer{padding-block:32px 48px;display:flex;justify-content:space-between;flex-w
 .mgrid{display:grid;grid-template-columns:1.2fr .8fr;gap:clamp(24px,4vw,56px);align-items:start}
 .mgrid > *{min-width:0}
 @media (max-width:860px){.mgrid{grid-template-columns:1fr}}
+/* live demo modal */
+.demo{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;padding-top:calc(16px + env(safe-area-inset-top,0px));padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));background:color-mix(in srgb,var(--ink) 55%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);animation:fadeIn .3s var(--ease)}
+.demo[hidden]{display:none!important}
+@keyframes fadeIn{from{opacity:0}}
+.demo-inner{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;height:100%;animation:popIn .45s var(--ease)}
+@keyframes popIn{from{transform:translateY(24px) scale(.97);opacity:0}}
+.demo-top{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;flex:none}
+.views{display:inline-flex;background:var(--surface);border-radius:999px;padding:4px;gap:2px}
+.views button{border:0;background:none;color:var(--muted);font:500 12px var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:9px 14px;border-radius:999px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+.views button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.demo-top .btn{background:var(--surface);color:var(--ink);border-color:var(--surface);padding:9px 16px;font-size:14px}
+.demo-top .btn:hover{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.stagebox{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center}
+.device{position:relative;background:#11131A;overflow:hidden;box-shadow:0 40px 80px -20px rgba(0,0,0,.6);display:flex;flex-direction:column;max-width:100%;max-height:100%;
+  transition:width .5s var(--ease),height .5s var(--ease),border-radius .5s var(--ease),padding .5s var(--ease)}
+.device iframe{flex:1;width:100%;border:0;background:#fff;display:block;min-height:0}
+.device .chrome{display:none;align-items:center;gap:8px;padding:10px 14px;background:var(--surface);border-bottom:1px solid var(--line)}
+.device .chrome i{width:10px;height:10px;border-radius:50%;background:var(--line)}
+.device .chrome span{margin-left:10px;flex:1;min-width:0;background:var(--bg);border-radius:8px;padding:5px 12px;font:500 12px var(--mono);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.device[data-view="phone"]{width:390px;height:min(800px,100%);padding:10px;border-radius:46px}
+.device[data-view="phone"] iframe{border-radius:36px}
+.device[data-view="tablet"]{width:820px;height:min(1080px,100%);padding:14px;border-radius:32px}
+.device[data-view="tablet"] iframe{border-radius:18px}
+.device[data-view="desktop"]{width:min(1280px,100%);height:100%;padding:0;border-radius:14px;background:var(--surface);border:1px solid var(--line)}
+.device[data-view="desktop"] .chrome{display:flex}
+@media (max-width:640px){
+  .demo{padding:0;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+  .demo-inner{gap:0;flex-direction:column-reverse}
+  .views{display:none}
+  .demo-top{width:100%;padding:10px 12px;background:var(--surface);justify-content:space-between}
+  .device,.device[data-view]{width:100%;height:100%;padding:0;border-radius:0;border:0}
+  .device[data-view] iframe{border-radius:0}
+  .device[data-view] .chrome{display:none}
+}
 /* email copy */
 .email{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:24px;position:relative}
 .email code{font:500 clamp(16px,2.4vw,22px) var(--mono);color:var(--bg);user-select:all;word-break:break-all}
@@ -331,6 +368,26 @@ footer{padding-block:32px 48px;display:flex;justify-content:space-between;flex-w
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
 <body>
+<div class="demo" id="demo" hidden role="dialog" aria-modal="true" aria-label="Shift Calendar live demo">
+  <div class="demo-inner">
+    <div class="demo-top">
+      <div class="views" role="group" aria-label="Screen size">
+        <button type="button" data-v="phone" aria-pressed="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/></svg>Phone</button>
+        <button type="button" data-v="tablet" aria-pressed="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/></svg>Tablet</button>
+        <button type="button" data-v="desktop" aria-pressed="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Desktop</button>
+      </div>
+      <a class="btn" href="https://jerintvarghese.com/Shift-Calendar/" target="_blank" rel="noopener">Open full screen</a>
+      <button class="btn" id="demoClose" type="button">Close</button>
+    </div>
+    <div class="stagebox">
+      <div class="device" id="device" data-view="desktop">
+        <div class="chrome"><i></i><i></i><i></i><span>jerintvarghese.com/Shift-Calendar</span></div>
+        <iframe id="demoFrame" title="Shift Calendar" loading="lazy"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="progress" aria-hidden="true"><i id="bar"></i></div>
 
 <nav>
@@ -449,11 +506,11 @@ footer{padding-block:32px 48px;display:flex;justify-content:space-between;flex-w
             <div class="chips"><span>Mobile UI</span><span>User flows</span><span>Figma</span></div>
           </div>
         </a>
-        <a class="card tilt rv" href="https://jerintvarghese.github.io/Shift-Calendar/" target="_blank" rel="noopener">
+        <a class="card tilt rv" id="shiftCard" href="https://jerintvarghese.com/Shift-Calendar/" target="_blank" rel="noopener">
           <div class="vis"><div class="rota" id="rota"></div></div>
           <span class="go"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
           <div class="body">
-            <span class="mono">Web app · Designed and built · Live</span>
+            <span class="mono">Web app · Tap to try it live</span>
             <h3>Shift Calendar</h3>
             <p>A calendar for shift workers on a four-crew rota. Mark leave and overtime, then see your pay worked out for you.</p>
             <div class="chips"><span>Product design</span><span>Responsive UI</span><span>Front end</span></div>
@@ -757,6 +814,24 @@ footer{padding-block:32px 48px;display:flex;justify-content:space-between;flex-w
       io.observe(stage);
     }
   })();
+
+  /* live demo */
+  const demo = document.getElementById('demo'), frame = document.getElementById('demoFrame'), card = document.getElementById('shiftCard');
+  let lastFocus = null;
+  const device = document.getElementById('device'), vbtns = document.querySelectorAll('.views button');
+  function setView(v){ device.dataset.view = v; vbtns.forEach(b => b.setAttribute('aria-pressed', b.dataset.v === v)); }
+  vbtns.forEach(b => b.addEventListener('click', () => setView(b.dataset.v)));
+  function openDemo(){
+    setView(innerWidth >= 1100 ? 'desktop' : innerWidth >= 700 ? 'tablet' : 'phone');
+    if(!frame.src) frame.src = 'https://jerintvarghese.com/Shift-Calendar/';
+    lastFocus = document.activeElement; demo.hidden = false; document.body.style.overflow = 'hidden';
+    document.getElementById('demoClose').focus();
+  }
+  function closeDemo(){ demo.hidden = true; document.body.style.overflow = ''; lastFocus && lastFocus.focus(); }
+  card.addEventListener('click', e => { if(e.metaKey || e.ctrlKey || e.shiftKey) return; e.preventDefault(); openDemo(); });
+  document.getElementById('demoClose').addEventListener('click', closeDemo);
+  demo.addEventListener('click', e => { if(e.target === demo) closeDemo(); });
+  addEventListener('keydown', e => { if(e.key === 'Escape' && !demo.hidden) closeDemo(); });
 
   /* copy email */
   const copyBtn = document.getElementById('copy');
