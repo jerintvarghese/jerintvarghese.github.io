@@ -489,12 +489,13 @@ footer{padding-block:32px 48px;display:flex;justify-content:space-between;flex-w
         <button type="button" data-v="tablet" aria-pressed="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/></svg>Tablet</button>
         <button type="button" data-v="desktop" aria-pressed="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Desktop</button>
       </div>
-      <a class="btn" href="https://jerintvarghese.com/Shift-Calendar/" target="_blank" rel="noopener">Open full screen</a>
+      <a class="btn" id="demoCase" href="#" target="_blank" rel="noopener" hidden>Case study</a>
+      <a class="btn" id="demoFull" href="https://jerintvarghese.com/Shift-Calendar/" target="_blank" rel="noopener">Open full screen</a>
       <button class="btn" id="demoClose" type="button">Close</button>
     </div>
     <div class="stagebox">
       <div class="device" id="device" data-view="desktop">
-        <div class="chrome"><i></i><i></i><i></i><span>jerintvarghese.com/Shift-Calendar</span></div>
+        <div class="chrome"><i></i><i></i><i></i><span id="demoUrl">jerintvarghese.com/Shift-Calendar</span></div>
         <iframe id="demoFrame" title="Shift Calendar" loading="lazy"></iframe>
       </div>
     </div>
@@ -616,17 +617,17 @@ footer{padding-block:32px 48px;display:flex;justify-content:space-between;flex-w
             <div class="chips"><span>Interaction design</span><span>Information architecture</span><span>React Native</span><span>Node.js</span></div>
           </div>
         </a>
-        <a class="card tilt rv" href="https://www.behance.net/gallery/190500649/eQ-The-Concept-Equilizer-App" target="_blank" rel="noopener">
+        <a class="card tilt rv" href="https://jerintvarghese.com/eQ/" target="_blank" rel="noopener" data-demo data-title="eQ" data-view="phone" data-case="https://www.behance.net/gallery/190500649/eQ-The-Concept-Equilizer-App">
           <div class="vis eq-bg"><div class="eq"><i style="animation-delay:-.2s"></i><i style="animation-delay:-.9s"></i><i style="animation-delay:-.4s"></i><i style="animation-delay:-1.1s"></i><i style="animation-delay:-.6s"></i><i style="animation-delay:-.1s"></i><i style="animation-delay:-.8s"></i></div></div>
           <span class="go"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
           <div class="body">
-            <span class="mono">Concept app · View on Behance</span>
+            <span class="mono">Web app · Tap to try it live</span>
             <h3>eQ, the concept equaliser</h3>
-            <p>A concept mobile app designed end to end, from user flows to high-fidelity interactive screens.</p>
-            <div class="chips"><span>Mobile UI</span><span>User flows</span><span>Figma</span></div>
+            <p>A minimal black-and-white equaliser with presets, custom slots and a draggable 6-band curve. Designed end to end, then built as a working web app.</p>
+            <div class="chips"><span>Mobile UI</span><span>Interaction design</span><span>Figma</span><span>Front end</span></div>
           </div>
         </a>
-        <a class="card tilt rv" id="shiftCard" href="https://jerintvarghese.com/Shift-Calendar/" target="_blank" rel="noopener">
+        <a class="card tilt rv" id="shiftCard" href="https://jerintvarghese.com/Shift-Calendar/" target="_blank" rel="noopener" data-demo data-title="Shift Calendar">
           <div class="vis"><div class="rota" id="rota"></div></div>
           <span class="go"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
           <div class="body">
@@ -965,19 +966,24 @@ footer{padding-block:32px 48px;display:flex;justify-content:space-between;flex-w
   })();
 
   /* live demo */
-  const demo = document.getElementById('demo'), frame = document.getElementById('demoFrame'), card = document.getElementById('shiftCard');
+  const demo = document.getElementById('demo'), frame = document.getElementById('demoFrame');
   let lastFocus = null;
   const device = document.getElementById('device'), vbtns = document.querySelectorAll('.views button');
   function setView(v){ device.dataset.view = v; vbtns.forEach(b => b.setAttribute('aria-pressed', b.dataset.v === v)); }
   vbtns.forEach(b => b.addEventListener('click', () => setView(b.dataset.v)));
-  function openDemo(){
-    setView(innerWidth >= 1100 ? 'desktop' : innerWidth >= 700 ? 'tablet' : 'phone');
-    if(!frame.src) frame.src = 'https://jerintvarghese.com/Shift-Calendar/';
+  function openDemo(c){
+    const url = c.href, v = c.dataset.view;
+    setView(v && innerWidth >= 700 ? v : innerWidth >= 1100 ? 'desktop' : innerWidth >= 700 ? 'tablet' : 'phone');
+    if(frame.getAttribute('src') !== url) frame.src = url;
+    frame.title = c.dataset.title || 'Live demo'; demo.setAttribute('aria-label', (c.dataset.title || 'App') + ' live demo');
+    document.getElementById('demoFull').href = url;
+    document.getElementById('demoUrl').textContent = url.replace(/^https?:\/\//,'').replace(/\/$/,'');
+    const cs = document.getElementById('demoCase'); if(c.dataset.case){ cs.href = c.dataset.case; cs.hidden = false; } else cs.hidden = true;
     lastFocus = document.activeElement; demo.hidden = false; document.body.style.overflow = 'hidden';
     document.getElementById('demoClose').focus();
   }
   function closeDemo(){ demo.hidden = true; document.body.style.overflow = ''; lastFocus && lastFocus.focus(); }
-  card.addEventListener('click', e => { if(e.metaKey || e.ctrlKey || e.shiftKey) return; e.preventDefault(); openDemo(); });
+  document.querySelectorAll('[data-demo]').forEach(c => c.addEventListener('click', e => { if(e.metaKey || e.ctrlKey || e.shiftKey) return; e.preventDefault(); openDemo(c); }));
   document.getElementById('demoClose').addEventListener('click', closeDemo);
   demo.addEventListener('click', e => { if(e.target === demo) closeDemo(); });
   addEventListener('keydown', e => { if(e.key === 'Escape' && !demo.hidden) closeDemo(); });
