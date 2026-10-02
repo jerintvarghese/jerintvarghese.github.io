@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mobify Prototype | Jerin Varghese</title>
+<meta name="description" content="Interactive prototype of Mobify, an offline communication app: chat, groups and file sharing over local Wi-Fi with no mobile data. Designed and built by Jerin Varghese.">
+<meta property="og:title" content="Mobify Prototype">
+<meta property="og:description" content="Try Mobify: two phones chatting over local Wi-Fi through a laptop server.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#101010">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Asap:wght@700&family=Poppins:wght@300;400;500&display=swap">
+<style>
+/* Layout: two phones on one Wi-Fi, with the laptop server console between them. Single dark look from the Mobify style guide. */
+:root {
+  --black: #101010;
+  --surface: #282828;
+  --low: #1b1b1b;
+  --muted: #5a5a5a;
+  --white: #ffffff;
+  --dim: rgba(255,255,255,.6);
+  --faint: rgba(255,255,255,.35);
+  --online: #8fd18f;
+  --danger: #e57373;
+  --page: #0b0b0b;
+  --frame: #222;
+  --brand: "Asap", "Arial Narrow", Arial, sans-serif;
+  --body: "Poppins", "Segoe UI", system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--page); color: var(--white); }
+body { margin: 0; font-family: var(--body); padding-inline: 16px; padding-block: 28px 48px; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--white); outline-offset: 2px; }
+
+.back { display:inline-block; margin-bottom:14px; font-size:12px; color: var(--dim); text-decoration:none; letter-spacing:.08em; }
+.back:hover { color: var(--white); }
+.intro { max-width: 1060px; margin: 0 auto 28px; display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 32px; }
+.intro h1 { font-family: var(--brand); font-weight: 700; letter-spacing: .3em; font-size: 28px; margin: 0; }
+.intro .tag { font-weight: 300; letter-spacing: .32em; text-transform: uppercase; font-size: 11px; color: var(--dim); margin: 6px 0 0; }
+.intro p.how { margin: 0; max-width: 46ch; font-size: 13px; color: var(--dim); line-height: 1.6; font-weight: 300; }
+.intro p.how b { color: var(--white); font-weight: 500; }
+
+.stage { max-width: 1060px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 28px; }
+
+/* ---------- phone ---------- */
+.phone-wrap { display: grid; gap: 10px; justify-items: center; }
+.phone-label { font-size: 11px; letter-spacing: .25em; text-transform: uppercase; color: var(--faint); }
+.phone { width: 300px; max-width: 100%; height: 620px; border-radius: 46px; background: var(--frame); padding: 10px;
+  box-shadow: 0 30px 60px -20px rgba(0,0,0,.8), inset 0 0 0 1px #333; position: relative; }
+.screen { position: relative; width: 100%; height: 100%; border-radius: 37px; background: var(--black); overflow: hidden; display: flex; flex-direction: column; }
+.notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 120px; height: 24px; background: var(--frame); border-radius: 0 0 16px 16px; z-index: 5; }
+.view { flex: 1; display: flex; flex-direction: column; min-height: 0; padding-top: 26px; }
+.brand { font-family: var(--brand); font-weight: 700; letter-spacing: .28em; text-align: center; font-size: 15px; }
+.bar { height: 44px; display: grid; grid-template-columns: 40px 1fr 40px; align-items: center; padding: 0 12px; flex: none; }
+.icon-btn { background: none; border: 0; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; color: var(--white); }
+.icon-btn:hover { background: var(--surface); }
+.chev { width: 9px; height: 9px; border-left: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); margin-left: 4px; }
+.chev.r { transform: rotate(-135deg); margin: 0 3px 0 0; width: 6px; height: 6px; }
+
+.center { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 16px; padding: 0 18px 30px; min-height: 0; }
+.card { background: var(--surface); border-radius: 18px; padding: 18px; display: grid; gap: 9px; }
+.label { font-family: var(--brand); font-weight: 700; text-align: center; font-size: 13.5px; line-height: 1.35; }
+.input { background: var(--low); border: 1px solid transparent; border-radius: 8px; padding: 9px 12px; font-size: 13px; width: 100%; }
+.input::placeholder { color: var(--faint); }
+.input:focus { border-color: var(--muted); outline: none; }
+.next { justify-self: center; display: inline-flex; align-items: center; gap: 6px; background: var(--low); border: 0; border-radius: 8px; padding: 8px 16px; font-family: var(--brand); font-weight: 700; font-size: 13px; }
+.next:disabled { opacity: .4; cursor: default; }
+.err { color: var(--danger); font-size: 11.5px; text-align: center; min-height: 0; }
+.small { font-size: 11px; color: var(--dim); text-align: center; font-weight: 300; line-height: 1.5; }
+.link { background: none; border: 0; color: var(--dim); font-size: 11px; text-decoration: underline; text-underline-offset: 3px; }
+
+.dots { display: flex; gap: 7px; justify-content: center; }
+.dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--white); animation: blink 1.2s infinite ease-in-out; opacity: .25; }
+.dots i:nth-child(2){animation-delay:.12s}.dots i:nth-child(3){animation-delay:.24s}.dots i:nth-child(4){animation-delay:.36s}.dots i:nth-child(5){animation-delay:.48s}
+@keyframes blink { 40% { opacity: 1; } }
+
+.list { flex: 1; overflow-y: auto; padding: 0 12px 80px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; align-content: start; min-height: 0; scrollbar-width: none; }
+.row { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 0; border-radius: 13px; padding: 9px 12px; text-align: left; width: 100%; }
+.row:hover { background: #303030; }
+.row .grow { flex: 1; min-width: 0; }
+.name { font-family: var(--brand); font-weight: 700; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sub { font-size: 11px; color: var(--dim); font-weight: 300; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sub.hot { color: var(--white); font-weight: 400; }
+.meta { display: grid; justify-items: end; gap: 5px; }
+.time { font-size: 10px; color: var(--faint); font-variant-numeric: tabular-nums; }
+.badge { min-width: 18px; height: 18px; border-radius: 9px; background: var(--white); color: var(--black); font-size: 10px; font-weight: 500; display: grid; place-items: center; padding: 0 5px; }
+.badge.none { visibility: hidden; }
+
+.av { position: relative; flex: none; border-radius: 50%; border: 2px solid var(--white); display: grid; place-items: center; font-weight: 500; }
+.av .on { position: absolute; right: -2px; bottom: -2px; width: 11px; height: 11px; border-radius: 50%; background: var(--online); border: 2px solid var(--black); }
+
+.check { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--white); display: grid; place-items: center; flex: none; }
+.check.on::after { content: ""; width: 8px; height: 4px; border-left: 1.6px solid var(--white); border-bottom: 1.6px solid var(--white); transform: rotate(-45deg) translate(1px,-1px); }
+
+.section { margin: 2px 12px 10px; background: var(--low); border-radius: 8px; padding: 10px; text-align: center; font-family: var(--brand); font-weight: 700; font-size: 13px; flex: none; }
+.seg { display: flex; margin: 0 44px 12px; background: var(--surface); padding: 3px; border-radius: 999px; flex: none; }
+.seg button { flex: 1; border: 0; background: none; border-radius: 999px; padding: 6px 0; font-size: 12px; }
+.seg button.on { background: var(--muted); }
+.fab { position: absolute; right: 18px; bottom: 26px; width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--white); color: var(--black); font-size: 24px; line-height: 1; display: grid; place-items: center; box-shadow: 0 6px 16px rgba(0,0,0,.5); }
+.foot { padding: 8px 0 22px; display: grid; gap: 6px; flex: none; }
+.empty { text-align: center; color: var(--dim); font-size: 12px; font-weight: 300; padding: 40px 18px; line-height: 1.6; }
+.empty b { display: block; color: var(--white); font-family: var(--brand); font-size: 14px; margin-bottom: 4px; }
+
+.chat-head { margin: 0 8px; background: var(--surface); border-radius: 13px; padding: 7px 10px; display: flex; align-items: center; gap: 10px; flex: none; }
+.msgs { flex: 1; overflow-y: auto; padding: 10px 10px 6px; display: flex; flex-direction: column; gap: 4px; min-height: 0; scrollbar-width: none; }
+.m { display: flex; align-items: flex-end; gap: 6px; }
+.m.me { justify-content: flex-end; }
+.bubble { max-width: 76%; border-radius: 15px; padding: 6px 10px 4px; font-size: 12.5px; line-height: 1.45; overflow-wrap: anywhere; }
+.m.me .bubble { background: var(--muted); border-bottom-right-radius: 4px; }
+.m.them .bubble { background: var(--surface); border-bottom-left-radius: 4px; }
+.bubble .who { font-size: 10px; color: var(--dim); font-weight: 500; }
+.bubble .t { display: block; text-align: right; font-size: 9px; color: var(--dim); margin-top: 1px; font-variant-numeric: tabular-nums; }
+.bubble img { display: block; width: 170px; max-width: 100%; height: 150px; object-fit: cover; border-radius: 10px; margin: 2px -4px 0; }
+.file { display: flex; gap: 9px; align-items: center; padding: 3px 0; }
+.file .doc { width: 22px; height: 28px; border: 1.5px solid var(--white); border-radius: 3px; flex: none; }
+.spacer { width: 24px; flex: none; }
+.composer { display: flex; align-items: flex-end; gap: 6px; padding: 6px 8px 18px; flex: none; }
+.composer .input { border-radius: 18px; padding: 8px 13px; }
+.round { width: 34px; height: 34px; border-radius: 50%; border: 0; background: var(--surface); flex: none; display: grid; place-items: center; font-size: 18px; line-height: 1; }
+.round.send { background: var(--white); }
+.round.send:disabled { opacity: .3; }
+.tri { width: 0; height: 0; border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-left: 11px solid var(--black); margin-left: 3px; }
+
+.sheet-bg { position: absolute; inset: 0; background: rgba(0,0,0,.65); display: flex; flex-direction: column; justify-content: flex-end; z-index: 10; }
+.sheet-bg.mid { justify-content: center; padding: 0 16px 40px; }
+.sheet { background: var(--surface); margin: 10px 10px 22px; border-radius: 18px; padding: 4px; }
+.sheet button, .sheet label { display: block; width: 100%; text-align: center; background: none; border: 0; padding: 13px; font-size: 13.5px; border-bottom: 1px solid #3a3a3a; cursor: pointer; }
+.sheet > :last-child { border-bottom: 0; color: var(--dim); }
+.sheet input[type=file] { display: none; }
+
+.splash { flex: 1; display: grid; grid-template-rows: 1fr auto; padding-bottom: 46px; }
+.splash .brand { align-self: center; font-size: 22px; }
+
+/* ---------- server console ---------- */
+.console { width: 330px; max-width: 100%; background: #0e0e0e; border: 1px solid #262626; border-radius: 14px; overflow: hidden; align-self: center; font-family: var(--mono); font-size: 11.5px; }
+.console header { display: flex; gap: 6px; align-items: center; padding: 9px 12px; background: #181818; border-bottom: 1px solid #262626; color: var(--dim); font-size: 11px; }
+.console header i { width: 9px; height: 9px; border-radius: 50%; background: #333; }
+.console header span { margin-left: 8px; }
+.console .body { padding: 14px; display: grid; gap: 12px; }
+.kv { display: grid; grid-template-columns: 110px 1fr; gap: 4px 8px; }
+.kv dt { color: var(--faint); }
+.kv dd { margin: 0; }
+.code { font-size: 22px; letter-spacing: .3em; color: var(--white); }
+.log { height: 190px; overflow-y: auto; border-top: 1px dashed #2a2a2a; padding-top: 10px; display: grid; gap: 3px; align-content: start; color: var(--dim); scrollbar-width: thin; }
+.log .in { color: var(--online); }
+.log .out { color: var(--faint); }
+.wifi { font-family: var(--body); text-align: center; color: var(--faint); font-size: 10px; letter-spacing: .25em; text-transform: uppercase; padding: 10px; border-top: 1px solid #1d1d1d; }
+
+@media (prefers-reduced-motion: reduce) { .dots i { animation: none; opacity: .7; } }
+</style>
+</head>
+<body>
+<div class="intro">
+  <div>
+    <a class="back" id="back" href="/">← Back to portfolio</a>
+    <h1>MOBIFY</h1>
+    <p class="tag">An offline communication application</p>
+  </div>
+  <p class="how">Two phones on the same Wi-Fi, talking through a laptop server. <b>Set up the left phone</b> using the pairing code in the server window, then chat with Rahul on the right. Ann and Helen are simulated and reply on their own.</p>
+</div>
+
+<div class="stage">
+  <div class="phone-wrap"><div class="phone-label">Your phone</div><div class="phone"><div class="screen" id="phoneA"></div></div></div>
+
+  <section class="console" aria-label="Mobify server window">
+    <header><i></i><i></i><i></i><span>node index.js</span></header>
+    <div class="body">
+      <div style="color:var(--white)">M O B I F Y &nbsp; server is running</div>
+      <dl class="kv">
+        <dt>Pairing code</dt><dd class="code" id="code">----</dd>
+        <dt>Server name</dt><dd>jerin-laptop</dd>
+        <dt>Address</dt><dd>192.168.1.20:4000</dd>
+        <dt>Online</dt><dd id="online">0</dd>
+      </dl>
+      <div class="log" id="log" aria-live="polite"></div>
+    </div>
+    <div class="wifi">Wi-Fi · no mobile data</div>
+  </section>
+
+  <div class="phone-wrap"><div class="phone-label">Rahul's phone</div><div class="phone"><div class="screen" id="phoneB"></div></div></div>
+</div>
+
+<script>
+// Hide the back link when shown inside the portfolio's live-demo popup
+if (window.self !== window.top) document.getElementById('back').style.display = 'none';
+(() => {
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const uid = (p) => p + Math.random().toString(36).slice(2, 10);
+  const clock = (ts) => new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const COLORS = ['#5a5a5a', '#6b5b4f', '#4f5d6b', '#5d4f6b', '#4f6b5b', '#6b4f55'];
+
+  // ======================= simulated LAN server =======================
+  const server = {
+    code: String(Math.floor(1000 + Math.random() * 9000)),
+    users: {}, convs: {}, msgs: {}, phones: new Set(),
+    log(text, cls = '') {
+      const el = document.getElementById('log');
+      const row = document.createElement('div');
+      row.className = cls;
+      row.textContent = `${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}  ${text}`;
+      el.append(row);
+      el.scrollTop = el.scrollHeight;
+      document.getElementById('online').textContent = Object.values(this.users).filter((u) => u.online).length;
+    },
+    pub(u) { return { id: u.id, name: u.name, phone: u.phone, color: u.color, online: u.online }; },
+    emit(evt, onlyUserIds) {
+      for (const p of this.phones) if (p.me && (!onlyUserIds || onlyUserIds.includes(p.me.id))) p.onEvent(evt);
+    },
+    addUser(name, phone, online, bot) {
+      const u = { id: uid('u_'), name, phone, color: COLORS[Object.keys(this.users).length % COLORS.length], online, bot };
+      this.users[u.id] = u;
+      return u;
+    },
+    register(phoneObj, name, phone, code) {
+      if (code !== this.code) throw new Error("That code isn't right. Check the server window.");
+      let u = Object.values(this.users).find((x) => x.phone === phone);
+      if (!u) u = this.addUser(name, phone, true);
+      u.name = name; u.online = true;
+      this.log(`● ${name} connected from 192.168.1.${30 + Object.keys(this.users).length}`, 'in');
+      this.emit({ type: 'presence', user: this.pub(u) });
+      return this.welcome(u);
+    },
+    welcome(u) {
+      return {
+        me: this.pub(u),
+        users: Object.values(this.users).map((x) => this.pub(x)),
+        convs: Object.values(this.convs).filter((c) => c.members.includes(u.id)).map((c) => this.view(c)),
+      };
+    },
+    view(c) { const l = this.msgs[c.id] || []; return { ...c, last: l[l.length - 1] || null }; },
+    open(meId, ids, name) {
+      const members = [...new Set([meId, ...ids])];
+      if (members.length === 2 && !name) {
+        const dm = Object.values(this.convs).find((c) => c.type === 'dm' && members.every((m) => c.members.includes(m)));
+        if (dm) return this.view(dm);
+      }
+      const c = { id: uid('c_'), type: members.length === 2 && !name ? 'dm' : 'group', name: name || null, members, createdAt: Date.now() };
+      this.convs[c.id] = c; this.msgs[c.id] = [];
+      this.log(`+ ${c.type === 'dm' ? 'chat' : `group "${name}"`} opened by ${this.users[meId].name}`, 'out');
+      this.emit({ type: 'conversation', conversation: this.view(c) }, members);
+      return this.view(c);
+    },
+    send(fromId, convId, text, att) {
+      const c = this.convs[convId];
+      const m = { id: uid('m_'), convId, from: fromId, text: text || '', att: att || null, ts: Date.now() };
+      this.msgs[convId].push(m);
+      this.log(`→ ${this.users[fromId].name}: ${att ? (att.mime.startsWith('image/') ? '[photo]' : `[file ${att.name}]`) : text.slice(0, 28)}`);
+      this.emit({ type: 'message', message: m }, c.members);
+      this.botsReact(m, c);
+      return m;
+    },
+    typing(fromId, convId) {
+      const c = this.convs[convId];
+      this.emit({ type: 'typing', convId, userId: fromId }, c.members.filter((m) => m !== fromId));
+    },
+    botsReact(m, c) {
+      if (this.users[m.from].bot) return;
+      const bots = c.members.map((id) => this.users[id]).filter((u) => u.bot && u.online);
+      if (!bots.length) return;
+      const bot = bots[Math.floor(Math.random() * bots.length)];
+      const t = (m.text || '').toLowerCase();
+      const reply = m.att ? 'Got it, thanks for sending that over 👍'
+        : /\b(hi|hey|hello)\b/.test(t) ? `Hey! This is ${bot.name}. Good to see you on Mobify.`
+        : /break|lunch|tea/.test(t) ? 'Break at 3 works for me ☕'
+        : /line|machine|down|fault/.test(t) ? "I'll check the line and report back."
+        : /\?$/.test(t.trim()) ? 'Good question, let me check and come back to you.'
+        : ['Sounds good!', 'Nice one 😄', 'Agreed.', 'On it.'][Math.floor(Math.random() * 4)];
+      setTimeout(() => this.typing(bot.id, c.id), 700);
+      setTimeout(() => this.send(bot.id, c.id, reply), 2000 + Math.random() * 800);
+    },
+  };
+
+  // seed: Rahul (phone B) plus simulated people
+  const rahul = server.addUser('Rahul', '0872222222', true);
+  const ann = server.addUser('Ann', '0873333333', true, true);
+  const helen = server.addUser('Helen', '0874444444', true, true);
+  server.addUser('Jobin', '0875555555', false, true);
+  server.addUser('Peter', '0876666666', false, true);
+  const crew = { id: 'c_crew', type: 'group', name: 'Line 3 crew', members: [rahul.id, ann.id, helen.id], createdAt: Date.now() - 3600e3 };
+  server.convs[crew.id] = crew;
+  server.msgs[crew.id] = [
+    { id: 'm1', convId: crew.id, from: ann.id, text: 'Morning all, line 3 is back up 🙌', att: null, ts: Date.now() - 50 * 60e3 },
+    { id: 'm2', convId: crew.id, from: rahul.id, text: 'Nice. Vision system was the culprit?', att: null, ts: Date.now() - 46 * 60e3 },
+    { id: 'm3', convId: crew.id, from: helen.id, text: 'Yes, a sensor was misaligned. All sorted now.', att: null, ts: Date.now() - 44 * 60e3 },
+  ];
+  document.getElementById('code').textContent = server.code;
+
+  // ============================ phone app ============================
+  class Phone {
+    constructor(el, opts = {}) {
+      this.el = el;
+      this.me = null; this.users = {}; this.convs = {}; this.msgs = {}; this.unread = {}; this.typingMap = {};
+      this.screen = 'splash'; this.tab = 'chats'; this.selected = []; this.active = null;
+      this.form = { name: '', phone: '', code: '', err: '' };
+      this.overlay = null; this.searching = true;
+      server.phones.add(this);
+      if (opts.signedInAs) { this.signIn(server.welcome(opts.signedInAs)); this.screen = 'home'; this.tab = 'groups'; }
+      else setTimeout(() => this.go('connect'), 1600);
+      el.addEventListener('click', (e) => this.onClick(e));
+      el.addEventListener('input', (e) => this.onInput(e));
+      el.addEventListener('keydown', (e) => this.onKey(e));
+      el.addEventListener('change', (e) => this.onFile(e));
+      this.render();
+    }
+
+    signIn(w) {
+      this.me = w.me;
+      w.users.forEach((u) => (this.users[u.id] = u));
+      w.convs.forEach((c) => { this.convs[c.id] = c; this.msgs[c.id] = [...(server.msgs[c.id] || [])]; });
+    }
+
+    onEvent(e) {
+      if (e.type === 'presence') this.users[e.user.id] = e.user;
+      if (e.type === 'conversation') { this.convs[e.conversation.id] = e.conversation; this.msgs[e.conversation.id] ||= []; }
+      if (e.type === 'typing') {
+        this.typingMap[e.convId] = { userId: e.userId, until: Date.now() + 2500 };
+        setTimeout(() => this.render(), 2600);
+      }
+      if (e.type === 'message') {
+        const m = e.message;
+        (this.msgs[m.convId] ||= []);
+        if (!this.msgs[m.convId].some((x) => x.id === m.id)) this.msgs[m.convId].push(m);
+        if (this.convs[m.convId]) this.convs[m.convId].last = m;
+        delete this.typingMap[m.convId];
+        if (m.from !== this.me.id && !(this.screen === 'chat' && this.active === m.convId)) this.unread[m.convId] = (this.unread[m.convId] || 0) + 1;
+      }
+      this.render();
+    }
+
+    go(screen, extra = {}) {
+      Object.assign(this, { screen, overlay: null }, extra);
+      if (screen === 'chat') delete this.unread[this.active];
+      if (screen === 'connect') { this.searching = true; setTimeout(() => { this.searching = false; this.render(); }, 1300); }
+      this.render(true);
+    }
+
+    title(c) {
+      if (c.name) return c.name;
+      return c.members.filter((m) => m !== this.me.id).map((m) => this.users[m]?.name || 'Someone').join(', ');
+    }
+    other(c) { return c.type === 'dm' ? this.users[c.members.find((m) => m !== this.me.id)] : null; }
+    preview(m) {
+      if (!m) return 'No messages yet';
+      const p = m.from === this.me.id ? 'You: ' : '';
+      return p + (m.att ? (m.att.mime.startsWith('image/') ? '📷 Photo' : `📎 ${m.att.name}`) : m.text);
+    }
+    avatar(u, name, size = 38, showOnline = true) {
+      const label = u?.name || name || '?';
+      const ini = label.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('');
+      return `<span class="av" style="width:${size}px;height:${size}px;background:${u?.color || '#5a5a5a'};font-size:${size * 0.36}px">${esc(ini)}${showOnline && u?.online ? '<span class="on"></span>' : ''}</span>`;
+    }
+    typingText(cid) {
+      const t = this.typingMap[cid];
+      return t && t.until > Date.now() ? `${this.users[t.userId]?.name || 'Someone'} is typing…` : null;
+    }
+
+    // ---------- views ----------
+    viewSplash() {
+      return `<div class="splash"><div class="brand">MOBIFY</div><div class="dots"><i></i><i></i><i></i><i></i><i></i></div></div>`;
+    }
+    viewConnect() {
+      return `<div class="bar"><span></span><div class="brand">MOBIFY</div><span></span></div>
+        <div class="center" style="justify-content:flex-start;padding-top:18px">
+          <div style="text-align:center"><div style="font-weight:500;font-size:16px">Join a Mobify network</div>
+          <div class="small" style="margin-top:6px">Phones on the same Wi-Fi or hotspot find the server automatically.</div></div>
+          ${this.searching
+            ? `<div style="display:grid;gap:12px;padding:24px 0"><div class="dots"><i></i><i></i><i></i><i></i><i></i></div><div class="small">Looking for servers on this network…</div></div>`
+            : `<button class="row" data-act="join"><span class="av" style="width:36px;height:36px;background:none"><span style="width:9px;height:9px;border-radius:50%;background:var(--online)"></span></span>
+                <span class="grow"><div class="name">jerin-laptop</div><div class="sub">192.168.1.20:4000</div></span><span class="chev r"></span></button>`}
+        </div>`;
+    }
+    viewRegister() {
+      const f = this.form;
+      return `<div class="bar"><span></span><div class="brand">MOBIFY</div><span></span></div>
+        <div class="center"><div class="card">
+          <div class="label">What's your full name?</div>
+          <input class="input" id="${this.el.id}-name" data-f="name" placeholder="Your name" value="${esc(f.name)}" autocomplete="off">
+          <div class="label" style="margin-top:4px">Enter your phone number</div>
+          <input class="input" id="${this.el.id}-phone" data-f="phone" placeholder="087 123 4567" inputmode="tel" value="${esc(f.phone)}" autocomplete="off">
+          <div class="err">${esc(f.err)}</div>
+          <button class="next" data-act="toCode" ${f.name.trim() && f.phone.replace(/\D/g, '').length >= 6 ? '' : 'disabled'}>Next <span class="chev r"></span></button>
+        </div><div class="small">Connected to jerin-laptop</div></div>`;
+    }
+    viewCode() {
+      const f = this.form;
+      return `<div class="bar"><button class="icon-btn" data-act="back" aria-label="Back"><span class="chev"></span></button><div class="brand">MOBIFY</div><span></span></div>
+        <div class="center"><div class="card">
+          <div class="label">Enter the code shown on<br>the Mobify server</div>
+          <input class="input" id="${this.el.id}-code" data-f="code" placeholder="• • • •" inputmode="numeric" maxlength="4" value="${esc(f.code)}"
+            style="text-align:center;letter-spacing:.6em;font-size:20px;padding:10px" autocomplete="off">
+          <div class="err">${esc(f.err)}</div>
+          <button class="next" data-act="register" ${f.code.length === 4 ? '' : 'disabled'}>Next <span class="chev r"></span></button>
+        </div><div class="small">The 4-digit code is in the server window.</div></div>`;
+    }
+    viewHome() {
+      const list = Object.values(this.convs)
+        .filter((c) => (this.tab === 'chats' ? c.type === 'dm' : c.type === 'group'))
+        .sort((a, b) => (b.last?.ts || b.createdAt) - (a.last?.ts || a.createdAt));
+      const dot = (t) => Object.keys(this.unread).some((id) => this.convs[id]?.type === (t === 'chats' ? 'dm' : 'group')) ? ' •' : '';
+      return `<div class="bar"><span></span><div class="brand">MOBIFY</div><span style="text-align:right;font-size:11px;color:var(--dim)">${esc(this.me.name.split(' ')[0])}</span></div>
+        <div class="seg"><button class="${this.tab === 'chats' ? 'on' : ''}" data-act="tab" data-v="chats">Chats${dot('chats')}</button><button class="${this.tab === 'groups' ? 'on' : ''}" data-act="tab" data-v="groups">Groups${dot('groups')}</button></div>
+        <div class="list">${list.length ? list.map((c) => {
+          const u = this.unread[c.id] || 0; const ty = this.typingText(c.id);
+          return `<button class="row" data-act="open" data-id="${c.id}">${this.avatar(this.other(c), this.title(c))}
+            <span class="grow"><div class="name">${esc(this.title(c))}</div><div class="sub ${u || ty ? 'hot' : ''}">${esc(ty || this.preview(c.last))}</div></span>
+            <span class="meta"><span class="time">${c.last ? clock(c.last.ts) : ''}</span><span class="badge ${u ? '' : 'none'}">${u}</span></span></button>`;
+        }).join('') : `<div class="empty"><b>No ${this.tab} yet</b>Tap + to see who's nearby and start a ${this.tab === 'chats' ? 'chat' : 'group'}.</div>`}</div>
+        <button class="fab" data-act="nearby" aria-label="Devices nearby">+</button>`;
+    }
+    viewNearby() {
+      const people = Object.values(this.users).filter((u) => u.id !== this.me.id).sort((a, b) => b.online - a.online || a.name.localeCompare(b.name));
+      const n = this.selected.length;
+      return `<div class="bar"><button class="icon-btn" data-act="home" aria-label="Back"><span class="chev"></span></button><div class="brand">MOBIFY</div><span></span></div>
+        <div class="section">Devices Nearby</div>
+        <div class="list" style="padding-bottom:10px">${people.map((u) => `<button class="row" data-act="pick" data-id="${u.id}">${this.avatar(u)}
+          <span class="grow"><div class="name">${esc(u.name)}</div><div class="sub">${u.online ? 'On this network' : 'Away'}</div></span>
+          <span class="check ${this.selected.includes(u.id) ? 'on' : ''}"></span></button>`).join('')}</div>
+        <div class="foot"><button class="next" data-act="startChat" ${n ? '' : 'disabled'}>${n > 1 ? `Group of ${n + 1}` : 'Next'} <span class="chev r"></span></button></div>
+        ${this.overlay === 'group' ? `<div class="sheet-bg mid"><div class="card">
+          <div class="label">Name your group</div>
+          <input class="input" id="${this.el.id}-group" data-f="group" placeholder="e.g. Line 3 crew" value="${esc(this.form.group || '')}" autocomplete="off">
+          <div class="small">With ${esc(this.selected.map((id) => this.users[id].name).join(', '))}</div>
+          <button class="next" data-act="createGroup" ${(this.form.group || '').trim() ? '' : 'disabled'}>Create <span class="chev r"></span></button>
+          <button class="link" data-act="closeOverlay">Cancel</button></div></div>` : ''}`;
+    }
+    viewChat() {
+      const c = this.convs[this.active];
+      const o = this.other(c);
+      const isGroup = c.type === 'group';
+      const sub = this.typingText(c.id) || (isGroup ? c.members.map((m) => (m === this.me.id ? 'You' : this.users[m]?.name)).join(', ') : o?.online ? 'On this network' : 'Away');
+      const list = this.msgs[c.id] || [];
+      return `<div class="bar" style="height:6px"></div>
+        <div class="chat-head"><button class="icon-btn" data-act="home" aria-label="Back"><span class="chev"></span></button>
+          ${this.avatar(o, this.title(c), 32)}<span class="grow" style="min-width:0;flex:1"><div class="name">${esc(this.title(c))}</div><div class="sub">${esc(sub)}</div></span></div>
+        <div class="msgs">${list.length ? list.map((m, i) => {
+          const mine = m.from === this.me.id; const u = this.users[m.from];
+          const first = isGroup && !mine && list[i - 1]?.from !== m.from;
+          const body = m.att ? (m.att.mime.startsWith('image/') ? `<img src="${m.att.url}" alt="${esc(m.att.name)}">`
+              : `<div class="file"><span class="doc"></span><span><div style="font-weight:500">${esc(m.att.name)}</div><div style="font-size:10px;color:var(--dim)">${Math.max(1, Math.round(m.att.size / 1024))} KB</div></span></div>`)
+            : esc(m.text);
+          return `<div class="m ${mine ? 'me' : 'them'}">${isGroup && !mine ? (first ? this.avatar(u, '', 24, false) : '<span class="spacer"></span>') : ''}
+            <div class="bubble">${first ? `<div class="who">${esc(u?.name)}</div>` : ''}${body}<span class="t">${clock(m.ts)}</span></div></div>`;
+        }).join('') : '<div class="empty">Say hello 👋<br>Messages stay on your local network.</div>'}</div>
+        <div class="composer"><button class="round" data-act="attach" aria-label="Attach">+</button>
+          <input class="input" id="${this.el.id}-msg" data-f="msg" placeholder="Type your message" value="${esc(this.form.msg || '')}" autocomplete="off">
+          <button class="round send" data-act="send" aria-label="Send" ${(this.form.msg || '').trim() ? '' : 'disabled'}><span class="tri"></span></button></div>
+        ${this.overlay === 'attach' ? `<div class="sheet-bg" data-act="closeOverlay"><div class="sheet">
+          <label>Photo or video<input type="file" accept="image/*" data-file="1"></label>
+          <label>File<input type="file" data-file="1"></label>
+          <button data-act="closeOverlay">Cancel</button></div></div>` : ''}`;
+    }
+
+    render(scrollBottom) {
+      // keep focus and caret across re-renders
+      const a = document.activeElement;
+      const focusId = a && this.el.contains(a) ? a.id : null;
+      const caret = focusId && a.selectionStart != null ? a.selectionStart : null;
+      const msgs = this.el.querySelector('.msgs');
+      const nearBottom = !msgs || msgs.scrollHeight - msgs.scrollTop - msgs.clientHeight < 60;
+
+      const v = { splash: this.viewSplash, connect: this.viewConnect, register: this.viewRegister, code: this.viewCode, home: this.viewHome, nearby: this.viewNearby, chat: this.viewChat }[this.screen].call(this);
+      this.el.innerHTML = `<div class="notch"></div><div class="view">${v}</div>`;
+
+      if (focusId) { const f = document.getElementById(focusId); if (f) { f.focus(); if (caret != null) try { f.setSelectionRange(caret, caret); } catch {} } }
+      const m2 = this.el.querySelector('.msgs');
+      if (m2 && (scrollBottom || nearBottom)) m2.scrollTop = m2.scrollHeight;
+    }
+
+    // ---------- interaction ----------
+    onInput(e) {
+      const f = e.target.dataset.f;
+      if (!f) return;
+      this.form[f] = f === 'code' ? e.target.value.replace(/\D/g, '').slice(0, 4) : e.target.value;
+      this.form.err = '';
+      if (f === 'msg' && this.form.msg) server.typing(this.me.id, this.active);
+      if (f === 'code' && this.form.code.length === 4) return this.doRegister();
+      this.render();
+    }
+    onKey(e) {
+      if (e.key !== 'Enter') return;
+      const f = e.target.dataset.f;
+      if (f === 'msg') this.doSend();
+      if (f === 'phone') this.act('toCode');
+      if (f === 'group') this.act('createGroup');
+    }
+    onClick(e) {
+      const t = e.target.closest('[data-act]');
+      if (!t || !this.el.contains(t)) return;
+      if (t.classList.contains('sheet-bg') && e.target !== t) return;
+      this.act(t.dataset.act, t.dataset);
+    }
+    act(a, d = {}) {
+      switch (a) {
+        case 'join': return this.go('register');
+        case 'toCode':
+          if (!this.form.name.trim() || this.form.phone.replace(/\D/g, '').length < 6) return;
+          this.form.code = ''; return this.go('code');
+        case 'register': return this.doRegister();
+        case 'back': return this.go('register');
+        case 'tab': this.tab = d.v; return this.render();
+        case 'open': this.form.msg = ''; return this.go('chat', { active: d.id });
+        case 'home': this.selected = []; return this.go('home');
+        case 'nearby': this.selected = []; return this.go('nearby');
+        case 'pick': this.selected = this.selected.includes(d.id) ? this.selected.filter((x) => x !== d.id) : [...this.selected, d.id]; return this.render();
+        case 'startChat':
+          if (this.selected.length === 1) { const c = server.open(this.me.id, this.selected); this.convs[c.id] = c; this.msgs[c.id] ||= []; this.tab = 'chats'; this.form.msg = ''; return this.go('chat', { active: c.id }); }
+          this.form.group = ''; this.overlay = 'group'; this.render();
+          return this.el.querySelector('[data-f=group]')?.focus();
+        case 'createGroup': {
+          const name = (this.form.group || '').trim(); if (!name) return;
+          const c = server.open(this.me.id, this.selected, name); this.convs[c.id] = c; this.msgs[c.id] ||= []; this.tab = 'groups'; this.form.msg = '';
+          return this.go('chat', { active: c.id });
+        }
+        case 'closeOverlay': this.overlay = null; return this.render();
+        case 'attach': this.overlay = 'attach'; return this.render();
+        case 'send': return this.doSend();
+      }
+    }
+    doRegister() {
+      try {
+        const w = server.register(this, this.form.name.trim(), this.form.phone.replace(/[^\d+]/g, ''), this.form.code);
+        this.signIn(w);
+        this.go('home');
+      } catch (err) {
+        this.form.err = err.message; this.form.code = ''; this.render();
+      }
+    }
+    doSend() {
+      const text = (this.form.msg || '').trim();
+      if (!text) return;
+      this.form.msg = '';
+      server.send(this.me.id, this.active, text);
+      this.el.querySelector('[data-f=msg]')?.focus();
+    }
+    onFile(e) {
+      if (!e.target.dataset.file) return;
+      const file = e.target.files?.[0];
+      this.overlay = null;
+      if (!file) return this.render();
+      const att = { name: file.name, size: file.size, mime: file.type || 'application/octet-stream', url: '' };
+      if (att.mime.startsWith('image/')) {
+        const r = new FileReader();
+        r.onload = () => { att.url = r.result; server.send(this.me.id, this.active, '', att); };
+        r.readAsDataURL(file);
+      } else server.send(this.me.id, this.active, '', att);
+      this.render();
+    }
+  }
+
+  server.log(`Pairing code ${server.code}`, 'out');
+  server.log('● Rahul connected from 192.168.1.31', 'in');
+  server.log('● Ann connected from 192.168.1.32', 'in');
+  server.log('● Helen connected from 192.168.1.33', 'in');
+  new Phone(document.getElementById('phoneB'), { signedInAs: rahul });
+  new Phone(document.getElementById('phoneA'));
+})();
+</script>
+</body>
+</html>
